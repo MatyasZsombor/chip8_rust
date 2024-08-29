@@ -55,10 +55,27 @@ fn main() -> Result<(), String> {
                 } => {
                     break 'running;
                 }
+                Event::KeyDown {
+                    keycode: Some(key), ..
+                } => {
+                    if let Some(k) = keys(key) {
+                        chip8.set_keyboard(k, false);
+                    }
+                }
+                Event::KeyUp {
+                    keycode: Some(key), ..
+                } => {
+                    if let Some(k) = keys(key) {
+                        chip8.set_keyboard(k, true);
+                    }
+                }
                 _ => {}
             }
         }
-        chip8.tick();
+        for _ in 0..10 {
+            chip8.tick();
+        }
+        chip8.update_timers();
         draw_screen(&chip8, &mut canvas)
     }
     Ok(())
@@ -88,4 +105,26 @@ pub fn draw_screen(chip8: &Chip8, canvas: &mut Canvas<Window>) {
         }
     }
     canvas.present();
+}
+
+fn keys(key: Keycode) -> Option<u8> {
+    match key {
+        Keycode::Num1 => Some(0x1),
+        Keycode::Num2 => Some(0x2),
+        Keycode::Num3 => Some(0x3),
+        Keycode::Num4 => Some(0xC),
+        Keycode::Q => Some(0x4),
+        Keycode::W => Some(0x5),
+        Keycode::E => Some(0x6),
+        Keycode::R => Some(0xD),
+        Keycode::A => Some(0x7),
+        Keycode::S => Some(0x8),
+        Keycode::D => Some(0x9),
+        Keycode::F => Some(0xE),
+        Keycode::Y => Some(0xA),
+        Keycode::X => Some(0x0),
+        Keycode::C => Some(0xB),
+        Keycode::V => Some(0xF),
+        _ => None,
+    }
 }
