@@ -12,6 +12,7 @@ pub struct Chip8 {
     sound_timer: u8,
     registers: [u8; 16],
     keyboard_state: Option<u8>,
+    pub wait_int: u8,
 }
 
 impl Default for Chip8 {
@@ -34,6 +35,7 @@ impl Chip8 {
             sound_timer: 0,
             registers: [0; 16],
             keyboard_state: None,
+            wait_int: 0,
         };
 
         //LOADS FONT STARTING AT 0x50
@@ -59,6 +61,24 @@ impl Chip8 {
             0x50,
         );
         chip8
+    }
+
+    fn wait_for_int(&mut self) -> bool {
+        match self.wait_int {
+            0 => {
+                self.wait_int = 1;
+                self.pc -= 2;
+                true
+            }
+            1 => {
+                self.pc -= 2;
+                true
+            }
+            _ => {
+                self.wait_int = 0;
+                false
+            }
+        }
     }
 
     pub fn load_rom(&mut self, file_name: &String) {
@@ -258,6 +278,10 @@ impl Chip8 {
     }
 
     fn display(&mut self, x: usize, y: usize, n: usize) {
+        if self.wait_for_int() {
+            return;
+        }
+
         let x = self.registers[x] as usize % consts::WIDTH;
         let y = self.registers[y] as usize % consts::HEIGHT;
         let mut flipped = false;

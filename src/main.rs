@@ -72,8 +72,11 @@ fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        for _ in 0..10 {
+        for _ in 0..15 {
             chip8.tick();
+        }
+        if chip8.wait_int == 1 {
+            chip8.wait_int = 2;
         }
         chip8.update_timers();
         draw_screen(&chip8, &mut canvas)
