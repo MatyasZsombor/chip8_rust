@@ -72,7 +72,7 @@ fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        for _ in 0..15 {
+        for _ in 0..12 {
             chip8.tick();
         }
         if chip8.wait_int == 1 {
