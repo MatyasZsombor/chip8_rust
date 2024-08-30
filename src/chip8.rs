@@ -99,12 +99,15 @@ impl Chip8 {
         self.keyboard_state[button] = down;
     }
 
-    pub fn update_timers(&mut self) {
+    pub fn update_timers(&mut self) -> bool {
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
         if self.sound_timer > 0 {
             self.sound_timer -= 1;
+            true
+        } else {
+            false
         }
     }
 

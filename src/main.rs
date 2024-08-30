@@ -1,5 +1,6 @@
 use std::env::{self};
 
+use buzzer::Buzzer;
 use chip8::Chip8;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -9,6 +10,7 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::EventPump;
 
+mod buzzer;
 mod chip8;
 mod consts;
 
@@ -42,12 +44,14 @@ fn main() -> Result<(), String> {
         .build()
         .expect("could not make a canvas");
 
+    let buzzer = Buzzer::new(&sdl_context.audio().unwrap());
+
     canvas.clear();
     canvas.present();
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
-        chip8.update_timers();
+        buzzer.play(chip8.update_timers());
 
         for _ in 0..30 {
             if check_keyboard(&mut event_pump, &mut chip8) {
