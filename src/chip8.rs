@@ -11,8 +11,9 @@ pub struct Chip8 {
     delay_timer: u8,
     sound_timer: u8,
     registers: [u8; 16],
-    keyboard_state: Option<u8>,
+    keyboard_state: [bool; 16],
     pub wait_int: u8,
+    wait_key: u8,
 }
 
 impl Default for Chip8 {
@@ -34,8 +35,9 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
             registers: [0; 16],
-            keyboard_state: None,
+            keyboard_state: [false; 16],
             wait_int: 0,
+            wait_key: 0,
         };
 
         //LOADS FONT STARTING AT 0x50
@@ -93,12 +95,8 @@ impl Chip8 {
         &self.screen
     }
 
-    pub fn set_keyboard(&mut self, state: u8, down: bool) {
-        if down {
-            self.keyboard_state = None;
-        } else {
-            self.keyboard_state = Some(state);
-        }
+    pub fn set_keyboard(&mut self, button: usize, down: bool) {
+        self.keyboard_state[button] = down;
     }
 
     pub fn update_timers(&mut self) {
@@ -220,12 +218,12 @@ impl Chip8 {
             (0xC, _, _, _) => self.registers[x] = thread_rng().gen::<u8>() & second_byte,
             (0xD, _, _, _) => self.display(x, y, n as usize),
             (0xE, _, 0x9, 0xE) => {
-                if self.keyboard_state == Some(self.registers[x]) {
+                if self.keyboard_state[self.registers[x] as usize] {
                     self.pc += 2;
                 }
             }
             (0xE, _, 0xA, 0x1) => {
-                if self.keyboard_state != Some(self.registers[x]) {
+                if !self.keyboard_state[self.registers[x] as usize] {
                     self.pc += 2;
                 }
             }
@@ -243,13 +241,38 @@ impl Chip8 {
                 self.registers[0xF] = if res > 0x1000 { 1 } else { 0 };
                 self.index_register = res & 0x0FFF;
             }
-            (0xF, _, 0x0, 0xA) => {
-                if let Some(k) = self.keyboard_state {
-                    self.registers[x] = k;
-                } else {
+            (0xF, _, 0x0, 0xA) => match self.wait_key {
+                0 => {
                     self.pc -= 2;
+                    for i in 0..self.keyboard_state.len() {
+                        if self.keyboard_state[i] {
+                            return;
+                        }
+                    }
+                    self.wait_key = 1;
                 }
-            }
+
+                1 => {
+                    self.pc -= 2;
+                    for i in 0..self.keyboard_state.len() {
+                        if self.keyboard_state[i] {
+                            self.registers[x] = i as u8;
+                            self.wait_key = 2;
+                            return;
+                        }
+                    }
+                }
+
+                _ => {
+                    for i in 0..self.keyboard_state.len() {
+                        if self.keyboard_state[i] {
+                            self.pc -= 2;
+                            return;
+                        }
+                    }
+                    self.wait_key = 0;
+                }
+            },
             (0xF, _, 0x2, 0x9) => {
                 let c = self.registers[x] & 0xF;
                 self.index_register = 0x50 + c as u16 * 5;

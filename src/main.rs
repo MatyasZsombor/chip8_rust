@@ -7,6 +7,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::EventPump;
 
 mod chip8;
 mod consts;
@@ -46,42 +47,48 @@ fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => {
-                    break 'running;
-                }
-                Event::KeyDown {
-                    keycode: Some(key), ..
-                } => {
-                    if let Some(k) = keys(key) {
-                        chip8.set_keyboard(k, false);
-                    }
-                }
-                Event::KeyUp {
-                    keycode: Some(key), ..
-                } => {
-                    if let Some(k) = keys(key) {
-                        chip8.set_keyboard(k, true);
-                    }
-                }
-                _ => {}
+        chip8.update_timers();
+
+        for _ in 0..30 {
+            if check_keyboard(&mut event_pump, &mut chip8) {
+                break 'running;
             }
-        }
-        for _ in 0..12 {
             chip8.tick();
         }
         if chip8.wait_int == 1 {
             chip8.wait_int = 2;
         }
-        chip8.update_timers();
         draw_screen(&chip8, &mut canvas)
     }
     Ok(())
+}
+
+pub fn check_keyboard(event_pump: &mut EventPump, chip8: &mut Chip8) -> bool {
+    for event in event_pump.poll_iter() {
+        match event {
+            Event::Quit { .. }
+            | Event::KeyDown {
+                keycode: Some(Keycode::Escape),
+                ..
+            } => return true,
+            Event::KeyDown {
+                keycode: Some(key), ..
+            } => {
+                if let Some(k) = keys(key) {
+                    chip8.set_keyboard(k, true);
+                }
+            }
+            Event::KeyUp {
+                keycode: Some(key), ..
+            } => {
+                if let Some(k) = keys(key) {
+                    chip8.set_keyboard(k, false);
+                }
+            }
+            _ => (),
+        }
+    }
+    false
 }
 
 pub fn draw_screen(chip8: &Chip8, canvas: &mut Canvas<Window>) {
@@ -110,7 +117,7 @@ pub fn draw_screen(chip8: &Chip8, canvas: &mut Canvas<Window>) {
     canvas.present();
 }
 
-fn keys(key: Keycode) -> Option<u8> {
+fn keys(key: Keycode) -> Option<usize> {
     match key {
         Keycode::Num1 => Some(0x1),
         Keycode::Num2 => Some(0x2),
