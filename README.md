@@ -1,16 +1,31 @@
-# My own implementation of the CHIP8 interpreter/emulator in rust 
+#  CHIP-8 Interpreter/Emulator in Rust  
 
-It currently only supports the original CHIP8 games it also implements all the quirks unique to the original CHIP8.
+This is **my implementation** of a CHIP-8 interpreter/emulator, developed entirely in Rust!
 
-To run it you can use cargo: 
-cargo run <file.ch8>
+### Features:
+- Supports **original CHIP-8 games** 🎮  
+- Implements **all the quirky behavior** of the original CHIP-8 system
 
-Used Resources:
+---
 
-https://github.com/Timendus/chip8-test-suite
+## 🚀 How to Run  
 
-https://nachtimwald.com/2024/03/12/chip8-dev-challenge-sound/
+### 1. Install SDL2  
+Make sure SDL2 is installed on your platform:  
+[SDL2 Installation Guide](https://wiki.libsdl.org/SDL2/Installation)  
 
-https://tobiasvl.github.io/blog/write-a-chip-8-emulator/
+### 2. Clone the Repository  
+Clone the repo to your local machine.  
 
-https://tobiasvl.github.io/blog/write-a-chip-8-emulator/
+### 3. Run the Emulator  
+Use Cargo to execute your CHIP-8 ROMs:  
+```bash
+cargo run --release <file.ch8>
+```
+
+## Resources That Helped Me  
+- [Timendus' CHIP-8 Test Suite](https://github.com/Timendus/chip8-test-suite)  
+- [CHIP-8 Dev Challenge (Sound)](https://nachtimwald.com/2024/03/12/chip8-dev-challenge-sound/)  
+- [Write a CHIP-8 Emulator by Tobias V. Langhoff](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/)  
+
+
